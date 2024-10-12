@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPI QR Code Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button[type="submit"] {
+            background-color: #27ae60;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2ecc71;
+        }
+
+        p {
+            margin-top: 10px;
+            color: #7f8c8d;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-container h2 {
+            color: #2c3e50;
+        }
+
+        .qr-container img {
+            margin-top: 10px;
+            width: 150px;
+            height: 150px;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        h3 {
+            margin-top: 20px;
+        }
+
+        h3.success {
+            color: green;
+        }
+
+        h3.failed {
+            color: red;
+        }
+    </style>
+
+    <script>
+        // Timer function for countdown
+        function startTimer(duration, display) {
+            var timer = duration, minutes, seconds;
+            var countdown = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(countdown);
+                    display.textContent = "Time is up!";
+                    document.getElementById("submit-btn").disabled = true; // Disable submit after timer ends
+                    alert("Time is up! Please refresh the page to try again.");
+                }
+            }, 1000);
+        }
+
+        // Start the timer when the page loads and the QR code is generated
+        window.onload = function () {
+            {% if qr_code %}
+            var threeMinutes = 60 * 3, // 3 minutes in seconds
+                display = document.querySelector('#time');
+            startTimer(threeMinutes, display);
+            {% endif %}
+        };
+    </script>
+</head>
+<body>
+    <h1>EV Payment System</h1>
+    <form method="POST" action="/generate_qr">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <p>Amount to pay: 1 Rs</p>
+
+        <button type="submit" id="submit-btn">Continue to Pay</button>
+    </form>
+
+    {% if qr_code %}
+    <div class="qr-container">
+        <h2>Scan this QR code to make the payment:</h2>
+        <img src="{{ qr_code }}" alt="UPI QR Code">
+        <p class="timer">Time remaining: <span id="time">03:00</span></p>
+    </div>
+    {% endif %}
+
+    {% if payment_status == "success" %}
+    <h3 class="success">Payment Successful!</h3>
+    {% elif payment_status == "failed" %}
+    <h3 class="failed">Payment Failed. Please try again.</h3>
+    {% endif %}
+</body>
+</html>
