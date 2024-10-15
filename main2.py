@@ -6,16 +6,24 @@ import qrcode
 import os
 import time  # To simulate waiting for payment confirmation
 import random  # To simulate payment success or failure
+import uvicorn
 
-upi_id="9724696358q-2@oksbi"
+# UPI ID and fixed payment amount
+upi_id = "9724696358q-2@oksbi"
+FIXED_AMOUNT = 1.00  # Set a fixed amount for the payment (in INR)
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Predefined payment amount
-FIXED_AMOUNT = 1.00  # Set a fixed amount for the payment (in INR)
+def get_temp_dir():
+    """Get the appropriate temp directory based on the environment."""
+    if os.getenv("AWS_EXECUTION_ENV") or os.getenv("VERCEL_ENV"):  # Check for AWS Lambda or Vercel
+        return "/tmp"  # Use /tmp for AWS Lambda and Vercel
+    else:
+        return os.getcwd()  # Use current working directory locally
 
-# Generate QR code based on UPI ID, name, and a fixed amount
 def generate_upi_qr(upi_id, name: str):
+    """Generate a UPI QR code and save it to a temp directory."""
     upi_string = f"upi://pay?pa={upi_id}&pn={name}&am={FIXED_AMOUNT}&cu=INR"
     qr = qrcode.QRCode(
         version=1,
@@ -27,38 +35,43 @@ def generate_upi_qr(upi_id, name: str):
     qr.make(fit=True)
 
     img = qr.make_image(fill='black', back_color='white')
-    img.save("static/upi_qr.png")
+
+    # Save the image to the temp directory
+    tmp_file_path = os.path.join(get_temp_dir(), "upi_qr.png")
+    img.save(tmp_file_path)
+
+    return tmp_file_path  # Return the path to the saved QR code
 
 @app.get("/", response_class=HTMLResponse)
 async def read_form(request: Request):
+    """Render the HTML form for UPI payment."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/generate_qr", response_class=HTMLResponse)
 async def generate_qr(request: Request, name: str = Form(...)):
-    generate_upi_qr(upi_id, name)
-    
-    # Simulate waiting for the payment confirmation (replace this with real UPI API call)
-    time.sleep(5)  # Simulates time taken for payment to be made (e.g., waiting for 5 seconds)
+    """Generate QR code for UPI payment and simulate payment confirmation."""
+    qr_file_path = generate_upi_qr(upi_id, name)  # Generate QR code and get the path
 
-    # Simulate payment status (replace this logic with actual payment gateway integration)
-    # payment_success = random.choice([True, False])  # Simulating payment success/failure randomly
+    # Simulate waiting for the payment confirmation
+    time.sleep(5)  # Simulates time taken for payment (e.g., waiting for 5 seconds)
 
-    # Return success or failure based on payment confirmation
-    # payment_status = "success" if payment_success else "failed"
+    # Simulate payment status
+    payment_success = random.choice([True, False])  # Simulating payment success/failure randomly
+    payment_status = "success" if payment_success else "failed"
 
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "qr_code": "/static/upi_qr.png",
-            # "payment_status": payment_status,
+            "payment_status": payment_status,
         }
     )
 
-
 @app.get("/static/upi_qr.png")
 def get_qr_code():
-    file_path = "static/upi_qr.png"
+    """Serve the generated QR code."""
+    file_path = os.path.join(get_temp_dir(), "upi_qr.png")  # Check the temp directory for the QR code
     if os.path.exists(file_path):
         return FileResponse(file_path)
     else:
