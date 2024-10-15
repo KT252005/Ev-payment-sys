@@ -63,3 +63,7 @@ def get_qr_code():
         return FileResponse(file_path)
     else:
         return {"error": "QR code not found!"}
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 4000))  
+    uvicorn.run(app, host="0.0.0.0", port=port)
