@@ -44,33 +44,34 @@ def generate_upi_qr(upi_id, name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_form(request: Request):
-    """Render the HTML form for UPI payment."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/generate_qr", response_class=HTMLResponse)
 async def generate_qr(request: Request, name: str = Form(...)):
-    """Generate QR code for UPI payment and simulate payment confirmation."""
     qr_file_path = generate_upi_qr(upi_id, name)  # Generate QR code and get the path
 
     # Simulate waiting for the payment confirmation
     time.sleep(5)  # Simulates time taken for payment (e.g., waiting for 5 seconds)
 
-    # Simulate payment status
-    payment_success = random.choice([True, False])  # Simulating payment success/failure randomly
-    payment_status = "success" if payment_success else "failed"
+    payment_status = "success" 
 
     return templates.TemplateResponse(
-        "index.html",
+        "qr.html",
         {
             "request": request,
             "qr_code": "/static/upi_qr.png",
             "payment_status": payment_status,
         }
     )
+    
+    
+@app.get("/success",response_class=HTMLResponse)
+async def tracker(request:Request):
+    return templates.TemplateResponse("chargingtrack.html",{"request":request})
+    
 
 @app.get("/static/upi_qr.png")
 def get_qr_code():
-    """Serve the generated QR code."""
     file_path = os.path.join(get_temp_dir(), "upi_qr.png")  # Check the temp directory for the QR code
     if os.path.exists(file_path):
         return FileResponse(file_path)

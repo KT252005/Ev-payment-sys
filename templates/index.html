@@ -288,39 +288,10 @@
         .shadow {
             box-shadow: inset 0 -3em 3em rgba(0, 0, 0, 0.1), 0 0 0 2px rgb(190, 190, 190), 0.3em 0.3em 1em rgba(0, 0, 0, 0.3);
         }
+
     </style>
 
-    <script>
-        // Timer function for countdown
-        function startTimer(duration, display) {
-            var timer = duration, minutes, seconds;
-            var countdown = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(countdown);
-                    display.textContent = "Time is up!";
-                    document.getElementById("submit-btn").disabled = true; // Disable submit after timer ends
-                    alert("Time is up! Please refresh the page to try again.");
-                }
-            }, 1000);
-        }
-
-        // Start the timer when the page loads and the QR code is generated
-        window.onload = function () {
-            {% if qr_code %}
-            var threeMinutes = 60 * 3, // 3 minutes in seconds
-                display = document.querySelector('#time');
-            startTimer(threeMinutes, display);
-            {% endif %}
-        };
-    </script>
+      
 </head>
 <body>
     <div class="card shadow">
@@ -348,18 +319,6 @@
                 <span aria-hidden="" class="marquee">Pay</span></button>
         </form>
     </div>
-        {% if qr_code %}
-        <div class="qr-container">
-            <h2>Scan this QR code to make the payment:</h2>
-            <img src="{{ qr_code }}" alt="UPI QR Code">
-            <p class="timer">Time remaining: <span id="time">03:00</span></p>
-        </div>
-        {% endif %}
-    
-        {% if payment_status == "success" %}
-        <h3 class="success">Payment Successful!</h3>
-        {% elif payment_status == "failed" %}
-        <h3 class="failed">Payment Failed. Please try again.</h3>
-        {% endif %}
+       
 </body>
 </html>

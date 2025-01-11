@@ -1,0 +1,130 @@
+<html>
+  <head>
+    <title>QR Pay</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        background-color: white;
+      }
+
+      #qr_container h1 {
+        text-align: center;
+      }
+
+      /* Popup Styles */
+      #popup {
+        display: none; /* Initially hidden */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        z-index: 1000;
+      }
+
+      #popup h2 {
+        color: #4caf50;
+        margin: 0;
+      }
+
+      #popup button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #popup button:hover {
+        background-color: #45a049;
+      }
+
+      #overlay {
+        display: none; /* Initially hidden */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+      #timer {
+        font-size: 1.5rem;
+        color: red;
+        margin-top: 20px;
+        text-align:center;
+      }
+
+      #qr_container h2{
+        text-align:center;
+      }
+    </style>
+    <script>
+      // Function to show the popup after 40 seconds
+      window.onload = function () {
+        setTimeout(() => {
+          showPopup();
+        }, 20000); // 40 seconds
+      };
+
+      // Show the popup
+      function showPopup() {
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+      }
+
+      // Close the popup
+      function closePopup() {
+        document.getElementById("popup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+        window.location.href="/success";
+      }
+
+
+      //timer :
+      countdown=30;
+      window.onload = function () {
+        const timerElement = document.getElementById("timer");
+        const interval = setInterval(() => {
+          timerElement.innerText = `Time remaining: ${countdown} seconds`;
+          countdown--;
+          if (countdown <4 ) {
+            clearInterval(interval); // Stop the timer when it reaches 0
+            showPopup(); // Call the popup or redirect function
+          }
+        }, 1000);
+      };
+    </script>
+  </head>
+
+  <body>
+    <div id="qr_container">
+      <h1>Scan to Pay</h1>
+      <h2>Charge to pay : 1.00 rupees </h2>
+      <img src="{{ qr_code }}" alt="UPI QR Code">
+      <div id="timer">Time remaining: 30 seconds</div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- Popup -->
+    <div id="popup">
+      <h2>Payment Successful!</h2>
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </body>
+</html>
